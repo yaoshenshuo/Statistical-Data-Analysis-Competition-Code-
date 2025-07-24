@@ -540,17 +540,22 @@ def test_details_page():
                 colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff']  # Color palette
                 for i, group in enumerate(unique_groups):
                     group_data = data[data[group_column] == group][value_column].dropna()
-                    fig.add_trace(go.Histogram(
+                    fig.add_trace(go.Violin(
                         x=group_data,
+                        y=[group] * len(group_data),
                         name=str(group),
+                        orientation='h',
                         marker_color=colors[i % len(colors)],
-                        opacity=0.3
+                        line_color=colors[i % len(colors)],
+                        showlegend=False
                     ))
                 
+                
                 fig.update_layout(
-                    barmode='overlay',
+                    violingap=0,
+                    violinmode='overlay',
                     xaxis_title=value_column,
-                    yaxis_title="Count"
+                    yaxis_title=group_column
                 )
                 st.plotly_chart(fig)
                 
@@ -624,77 +629,57 @@ def test_details_page():
                 x_col = st.selectbox("Select X variable", data.columns)
             with col2:
                 y_col = st.selectbox("Select Y variable", data.columns)
+      
 
-            # Create histograms for each variable
-            fig = go.Figure()
-            fig.add_trace(go.Histogram(
-                x=data[x_col].dropna(),
-                name=x_col,
-                marker_color='#1f77b4'  # Blue
-            ))
-            fig.add_trace(go.Histogram(
-                x=data[y_col].dropna(),
-                name=y_col,
-                marker_color='#ff7f0e'  # Orange
-            ))
-            fig.update_layout(
-                barmode='group',
-                title="Distribution of Variables",
-                xaxis_title="Value",
-                yaxis_title="Count"
-            )
-            st.plotly_chart(fig)
-            
-            # Scatter plot
-            fig_scatter = go.Figure()
-            fig_scatter.add_trace(go.Scatter(
-                x=data[x_col],
-                y=data[y_col],
-                mode='markers',
-                marker_color='#2ca02c'  # Green
-            ))
-            if st.session_state.selected_test == "Pearson correlation":
+
+            col1, col2 = st.columns([3,2])
+            with col1:
+                st.markdown(
+                    f"<h4 style='text-align: center;'>Scatter Plot</h4>",
+                    unsafe_allow_html=True
+                )
+                # Scatter plot
+                fig_scatter = go.Figure()
                 fig_scatter.add_trace(go.Scatter(
                     x=data[x_col],
-                    y=np.poly1d(np.polyfit(data[x_col].dropna(), data[y_col].dropna(), 1))(data[x_col].dropna()),
-                    mode='lines',
-                    line_color='red',
-                    name='Regression Line'
+                    y=data[y_col],
+                    mode='markers',
+                    marker_color='#2ca02c'  # Green
                 ))
-            fig_scatter.update_layout(
-                title="Scatter Plot",
-                xaxis_title=x_col,
-                yaxis_title=y_col
-            )
-            st.plotly_chart(fig_scatter)
-            
-            if st.button("Perform Test"):
                 if st.session_state.selected_test == "Pearson correlation":
-                    r_stat, p_value = stats.pearsonr(
-                        data[x_col].dropna(), 
-                        data[y_col].dropna()
-                    )
-
-                    show_test_results(
-                        test_name="Pearson correlation",
-                        statistic=r_stat,
-                        p_value=p_value,
-                        extra_info=f"Correlation strength: {interpret_correlation(r_stat)}"
-                    )
+                    fig_scatter.add_trace(go.Scatter(
+                        x=data[x_col],
+                        y=np.poly1d(np.polyfit(data[x_col].dropna(), data[y_col].dropna(), 1))(data[x_col].dropna()),
+                        mode='lines',
+                        line_color='red',
+                        name='Regression Line'
+                    ))
+                fig_scatter.update_layout(
+                    xaxis_title=x_col,
+                    yaxis_title=y_col
+                )
+                st.plotly_chart(fig_scatter)
                 
-                elif st.session_state.selected_test == "Spearman correlation":
-                    r_stat, p_value = stats.spearmanr(
-                        data[x_col].dropna(), 
-                        data[y_col].dropna()
-                    )
-                    
-                    show_test_results(
-                        test_name="Spearman correlation",
-                        statistic=r_stat,
-                        p_value=p_value,
-                        extra_info=f"Correlation strength: {interpret_correlation(r_stat)}"
-                    )
-        
+            
+                if st.button("Perform Test"):
+                    if st.session_state.selected_test == "Pearson correlation":
+                        x = data[x_col].dropna()
+                        y = data[y_col].dropna()
+                        r_stat, p_value = stats.pearsonr(x, y)
+                        n = len(x)
+
+                        with col2:
+                            show_test_results(
+                                test_name="Pearson correlation",
+                                statistic=r_stat,
+                                p_value=p_value,
+                                extra_info=[
+                                    f"Sample size (n): {n}",
+                                    f"Correlation strength: {interpret_correlation(r_stat)}"
+                                ]
+                            )
+                
+                
         elif st.session_state.selected_test == "Chi-Square test of independence":
             col1, col2 = st.columns(2)
             with col1:
