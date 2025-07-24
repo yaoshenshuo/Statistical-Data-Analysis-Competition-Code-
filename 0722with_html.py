@@ -270,99 +270,94 @@ def test_details_page():
             g1 = filtered.loc[filtered[selected_column] == group1_col, value_col]
             g2 = filtered.loc[filtered[selected_column] == group2_col, value_col]
 
+            col1, col2 = st.columns([3,2])
 
-
-            #直方图
-            fig = go.Figure()
-            fig.add_trace(go.Histogram(
-                x=g1, 
-                name=str(group1_col),
-                marker_color='#1f77b4',  #自己选颜色1
-                opacity=0.65#透明度可调  1是完全不透明 0是完全透明
-            ))
-            fig.add_trace(go.Histogram(
-                x=g2, 
-                name=str(group2_col),
-                marker_color='#ff7f0e',  #自己选颜色2
-                opacity=0.65#透明度可调  1是完全不透明 0是完全透明         下面相同的地方都是一样的
-            ))
-            
-            #重叠更暗
-            fig.update_layout(
-                barmode='overlay',
-                title=f"Distribution of {value_col} by {selected_column}",
-                xaxis_title=value_col,
-                yaxis_title="Count",
-                legend_title=selected_column,
-            )
-            st.plotly_chart(fig)
-            
-
-
-
-            if st.button("Perform Test"):
-                group1_data = filtered[filtered[selected_column] == group1_col][value_col].dropna()
-                group2_data = filtered[filtered[selected_column] == group2_col][value_col].dropna()
+            with col1:
+                #histogram
                 
-                if len(group1_data) < 2 or len(group2_data) < 2:
-                    st.error("Each group must have at least 2 observations to perform the test.")
-                    st.stop()
+                st.markdown(
+    f"<h4 style='text-align: center;'>Distribution of {value_col} by {selected_column}</h4>",
+    unsafe_allow_html=True
+)
+                fig = go.Figure()
+                fig.add_trace(go.Histogram(
+                    x=g1, 
+                    name=str(group1_col),
+                    marker_color='#1f77b4',  #choose colors
+                    opacity=0.65#1是完全不透明 0是完全透明
+                ))
+                fig.add_trace(go.Histogram(
+                    x=g2, 
+                    name=str(group2_col),
+                    marker_color='#ff7f0e',  #自己选颜色2
+                    opacity=0.65#透明度可调  1是完全不透明 0是完全透明
+                ))
+                
+                #重叠更暗
+                fig.update_layout(
+                    barmode='overlay',
                     
-                if st.session_state.selected_test == "Independent t-test":
-                    _, p1 = stats.shapiro(group1_data)
-                    _, p2 = stats.shapiro(group2_data)
-                    
-                    if p1 < 0.05 or p2 < 0.05:
-                        st.warning("Warning: One or both groups may not be normally distributed (Shapiro-Wilk test p < 0.05). Consider using Mann-Whitney U test instead.")
-                    
-                    _, p_var = stats.levene(group1_data, group2_data)
-                    equal_var = p_var > 0.05
-                    
-                    t_stat, p_value = stats.ttest_ind(
-                        group1_data,
-                        group2_data,
-                        equal_var=equal_var
-                    )
-                    
-                    cohens_d = pg.compute_effsize(
-                        group1_data,
-                        group2_data,
-                        eftype='cohen'
-                    )
-                    
-                    show_test_results(
-                        test_name="Independent t-test",
-                        statistic=t_stat,
-                        p_value=p_value,
-                        effect_size=cohens_d,
-                        effect_name="Cohen's d",
-                        extra_info=[
-                            f"Group sizes: {len(group1_data)} vs {len(group2_data)}",
-                            f"Group means: {group1_data.mean():.2f} vs {group2_data.mean():.2f}",
-                            f"Equal variance assumed: {'Yes' if equal_var else 'No'} (Levene's test p = {p_var:.4f})"
-                        ]
-                    )
+                    xaxis_title=value_col,
+                    yaxis_title="Count",
+                    legend_title=selected_column,
+                )
+                st.plotly_chart(fig)
+            
+                
 
-                elif st.session_state.selected_test == "Mann-Whitney U Test":
-                    u_stat, p_value = stats.mannwhitneyu(
-                        group1_data,
-                        group2_data,
-                        alternative='two-sided'
-                    )
-                    n1 = len(group1_data)
-                    n2 = len(group2_data)
-                    r = 1 - (2 * u_stat) / (n1 * n2)
-                    show_test_results(
-                        test_name="Mann-Whitney U Test",
-                        statistic=u_stat,
-                        p_value=p_value,
-                        effect_size=r,
-                        effect_name="Rank-biserial r",
-                        extra_info=[
-                            f"Group sizes: {n1} vs {n2}",
-                            f"Group medians: {group1_data.median():.2f} vs {group2_data.median():.2f}"
-                        ]
-                    )    
+            
+
+                if st.button("Perform Test"):
+                    group1_data = filtered[filtered[selected_column] == group1_col][value_col].dropna()
+                    group2_data = filtered[filtered[selected_column] == group2_col][value_col].dropna()
+                    
+                    if len(group1_data) < 2 or len(group2_data) < 2:
+                        st.error("Each group must have at least 2 observations to perform the test.")
+                        st.stop()
+                        
+                
+
+                    if st.session_state.selected_test == "Independent t-test":
+                        _, p1 = stats.shapiro(group1_data)
+                        _, p2 = stats.shapiro(group2_data)
+                        
+                        if p1 < 0.05 or p2 < 0.05:
+                            st.warning("Warning: One or both groups may not be normally distributed (Shapiro-Wilk test p < 0.05). Consider using Mann-Whitney U test instead.")
+                        
+
+
+
+                    with col2:
+
+                        _, p_var = stats.levene(group1_data, group2_data)
+                        equal_var = p_var > 0.05
+                        
+                        t_stat, p_value = stats.ttest_ind(
+                            group1_data,
+                            group2_data,
+                            equal_var=equal_var
+                        )
+                        
+                        cohens_d = pg.compute_effsize(
+                            group1_data,
+                            group2_data,
+                            eftype='cohen'
+                        )
+                        
+                        show_test_results(
+                            test_name="Independent t-test",
+                            statistic=t_stat,
+                            p_value=p_value,
+                            effect_size=cohens_d,
+                            effect_name="Cohen's d",
+                            extra_info=[
+                                f"Group sizes: {len(group1_data)} vs {len(group2_data)}",
+                                f"Group means: {group1_data.mean():.2f} vs {group2_data.mean():.2f}",
+                                f"Equal variance assumed: {'Yes' if equal_var else 'No'} (Levene's test p = {p_var:.4f})"
+                            ]
+                        )
+
+                    
                
         elif st.session_state.selected_test in ["Paired t-test", "Wilcoxon signed-rank Test"]:
             col1, col2 = st.columns(2)
@@ -384,76 +379,98 @@ def test_details_page():
                 data = data.dropna(subset=[pre_col, post_col])
 
 
-            fig = go.Figure()
-            fig.add_trace(go.Histogram(
-                x=data[pre_col].dropna(),
-                name="Pre-treatment",
-                marker_color='#1f77b4',
-                opacity=0.65
-            ))
-            fig.add_trace(go.Histogram(
-                x=data[post_col].dropna(),
-                name="Post-treatment",
-                marker_color='#ff7f0e',
-                opacity=0.65
-            ))
-            fig.update_layout(
-                barmode='overlay',
-                title="Pre-Post Comparison",
-                xaxis_title="Value",
-                yaxis_title="Count"
-            )
-            st.plotly_chart(fig)
 
-            diff = data[post_col] - data[pre_col]
-            fig_diff = go.Figure()
-            fig_diff.add_trace(go.Histogram(
-                x=diff.dropna(),
-                name="Difference",
-                marker_color='#2ca02c'  # Green
-            ))
-            fig_diff.update_layout(
-                title="Difference Distribution",
-                xaxis_title="Post - Pre",
-                yaxis_title="Count"
-            )
-            st.plotly_chart(fig_diff)
-            
-            if st.button("Perform Test"):
-                if st.session_state.selected_test == "Paired t-test":
-                    
-                    _, p_pre = stats.shapiro(data[pre_col])
-                    _, p_post = stats.shapiro(data[post_col])
-                    if p_pre < 0.05 or p_post < 0.05:
-                        st.warning("Warning: One or both groups may not be normally distributed (Shapiro-Wilk test p < 0.05). Consider using Wilcoxon signed-rank test instead.")
-                    
-                    t_stat, p_value = stats.ttest_rel(
-                        data[pre_col].dropna(), 
-                        data[post_col].dropna()
-                    )
-                    
-                    cohens_d = pg.compute_effsize(
-                        data[pre_col].dropna(), 
-                        data[post_col].dropna(),
-                        paired=True,
-                        eftype='cohen'
-                    )
-                    
-                    show_test_results(
-                        test_name="Paired t-test",
-                        statistic=t_stat,
-                        p_value=p_value,
-                        effect_size=cohens_d,
-                        effect_name="Cohen's d",
-                        extra_info=[
-                            f"Sample size: {len(data)}",
-                            f"Pre-treatment mean: {data[pre_col].mean():.2f}",
-                            f"Post-treatment mean: {data[post_col].mean():.2f}",
-                            f"Mean difference: {diff.mean():.2f}"
-                        ]
-                    )
-                    
-                elif st.session_state.selected_test == "Wilcoxon signed-rank Test":
+
+
+
+            col1, col2, col3 = st.columns([2,2,2])
+            with col1:
+                st.markdown(
+    f"<h4 style='text-align: center;'>Pre-Post Comparison</h4>",
+    unsafe_allow_html=True
+)
+                fig = go.Figure()
+                fig.add_trace(go.Histogram(
+                    x=data[pre_col].dropna(),
+                    name="Pre-treatment",
+                    marker_color='#1f77b4',
+                    opacity=0.65
+                ))
+                fig.add_trace(go.Histogram(
+                    x=data[post_col].dropna(),
+                    name="Post-treatment",
+                    marker_color='#ff7f0e',
+                    opacity=0.65
+                ))
+                fig.update_layout(
+                    barmode='overlay',
+                
+                    xaxis_title="Value",
+                    yaxis_title="Count"
+                )
+                st.plotly_chart(fig)
+
+                if st.button("Perform Test"):
+                    if st.session_state.selected_test == "Paired t-test":
+                        _, p_pre = stats.shapiro(data[pre_col])
+                        _, p_post = stats.shapiro(data[post_col])
+                        if p_pre < 0.05 or p_post < 0.05:
+                            st.warning("Warning: One or both groups may not be normally distributed (Shapiro-Wilk test p < 0.05). Consider using Wilcoxon signed-rank test instead.")
+
+
+
+
+
+                            with col2:
+                                st.markdown(
+                    f"<h4 style='text-align: center;'>Difference Distribution</h4>",
+                    unsafe_allow_html=True
+                )
+                                diff = data[post_col] - data[pre_col]
+                                fig_diff = go.Figure()
+                                fig_diff.add_trace(go.Histogram(
+                                    x=diff.dropna(),
+                                    name="Difference",
+                                    marker_color='#2ca02c'  # Green
+                                ))
+                                fig_diff.update_layout(
+                                
+                                    xaxis_title="Post - Pre",
+                                    yaxis_title="Count"
+                                )
+                                st.plotly_chart(fig_diff)
+                                
+
+
+
+                            with col3:  
+                                t_stat, p_value = stats.ttest_rel(
+                                    data[pre_col].dropna(), 
+                                    data[post_col].dropna()
+                                )
+                                
+                                cohens_d = pg.compute_effsize(
+                                    data[pre_col].dropna(), 
+                                    data[post_col].dropna(),
+                                    paired=True,
+                                    eftype='cohen'
+                                )
+                                
+                                show_test_results(
+                                    test_name="Paired t-test",
+                                    statistic=t_stat,
+                                    p_value=p_value,
+                                    effect_size=cohens_d,
+                                    effect_name="Cohen's d",
+                                    extra_info=[
+                                        f"Sample size: {len(data)}",
+                                        f"Pre-treatment mean: {data[pre_col].mean():.2f}",
+                                        f"Post-treatment mean: {data[post_col].mean():.2f}",
+                                        f"Mean difference: {diff.mean():.2f}"
+                                    ]
+                                )
+                                    
+        elif st.session_state.selected_test == "Wilcoxon signed-rank Test":
                     w_stat, p_value = stats.wilcoxon(
                         data[pre_col].dropna(), 
                         data[post_col].dropna()
@@ -464,6 +481,7 @@ def test_details_page():
                         statistic=w_stat,
                         p_value=p_value
                     )
+                            
         
         elif st.session_state.selected_test in ["ANOVA", "Kruskal-Wallis Test"]:
             group_column = st.selectbox(
@@ -488,43 +506,53 @@ def test_details_page():
                 st.stop()
             
             # Create histogram for multiple groups
-            fig = go.Figure()
-            # colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
-            colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff']  # Color palette
-            for i, group in enumerate(unique_groups):
-                group_data = data[data[group_column] == group][value_column].dropna()
-                fig.add_trace(go.Histogram(
-                    x=group_data,
-                    name=str(group),
-                    marker_color=colors[i % len(colors)],
-                    opacity=0.3
-                ))
-            
-            fig.update_layout(
-                barmode='overlay',
-                title=f"Distribution of {value_column} by {group_column}",
-                xaxis_title=value_column,
-                yaxis_title="Count"
-            )
-            st.plotly_chart(fig)
-            
-            if st.button("Perform Test"):
-                groups_data = [data[data[group_column]==g][value_column].dropna() for g in unique_groups]
-                
-                if st.session_state.selected_test == "ANOVA":
-                    normality_results = []
-                    for i, g in enumerate(unique_groups):
-                        _, p = stats.shapiro(groups_data[i])
-                        normality_results.append(p >= 0.05)
-                        
-                    if not all(normality_results):
-                        st.warning("Warning: Some groups may not be normally distributed (Shapiro-Wilk test p < 0.05). Consider using Kruskal-Wallis test instead.")
 
+            col1, col2 = st.columns([3,2])
+
+            with col1:
+                st.markdown(
+                    f"<h4 style='text-align: center;'>Distribution of {value_column} by {group_column}</h4>",
+                    unsafe_allow_html=True
+                )
+                fig = go.Figure()
+                # colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+                colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff']  # Color palette
+                for i, group in enumerate(unique_groups):
+                    group_data = data[data[group_column] == group][value_column].dropna()
+                    fig.add_trace(go.Histogram(
+                        x=group_data,
+                        name=str(group),
+                        marker_color=colors[i % len(colors)],
+                        opacity=0.3
+                    ))
+                
+                fig.update_layout(
+                    barmode='overlay',
+                    xaxis_title=value_column,
+                    yaxis_title="Count"
+                )
+                st.plotly_chart(fig)
+                
+                if st.button("Perform Test"):
+                    groups_data = [data[data[group_column]==g][value_column].dropna() for g in unique_groups]
+                    
+                    if st.session_state.selected_test == "ANOVA":
+                        normality_results = []
+                        for i, g in enumerate(unique_groups):
+                            _, p = stats.shapiro(groups_data[i])
+                            normality_results.append(p >= 0.05)
+                            
+                        if not all(normality_results):
+                            st.warning("Warning: Some groups may not be normally distributed (Shapiro-Wilk test p < 0.05). Consider using Kruskal-Wallis test instead.")
+
+
+            
                     _, p_var = stats.levene(*groups_data)
                     equal_var = p_var > 0.05
                     if not equal_var:
                         st.warning("Warning: Groups may not have equal variances (Levene's test p < 0.05). Consider using Welch's ANOVA or Kruskal-Wallis test.")
-                    
+                        
+            with col2:
                     f_stat, p_value = stats.f_oneway(*groups_data)
 
                     try:
@@ -551,7 +579,7 @@ def test_details_page():
                         ]
                     )
                 
-                elif st.session_state.selected_test == "Kruskal-Wallis Test":
+        elif st.session_state.selected_test == "Kruskal-Wallis Test":
                     h_stat, p_value = stats.kruskal(*groups_data)
                     n = len(data[value_column].dropna())
                     k = len(unique_groups)
@@ -764,8 +792,10 @@ def test_details_page():
 
 
 def show_test_results(test_name, statistic, p_value, effect_size=None, effect_name=None, extra_info=None):
-    st.markdown(f"## Test Results: *{test_name}*")
-    
+    st.markdown(
+    f"<div style='text-align: center;'><h4>Test Results: <em>{test_name}</em></h4></div>",
+    unsafe_allow_html=True
+)
     # Define tooltips for each metric
     tooltips = {
         "Statistic": "Test statistic is a value calculated from sample data that measures how far the sample deviates from the null hypothesis, used to determine whether to reject the null hypothesis.",
@@ -953,12 +983,13 @@ def show_test_results(test_name, statistic, p_value, effect_size=None, effect_na
     
     # Additional information
     if extra_info is not None:
-        st.markdown("### Additional Information")
+
+        expander = st.expander("# Additional Information")
         if isinstance(extra_info, list):
             for info in extra_info:
-                st.write(info)
+                expander.write(info)
         else:
-            st.write(extra_info)
+            expander.write(extra_info)
 
 
 
