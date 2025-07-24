@@ -276,9 +276,9 @@ def test_details_page():
                 #histogram
                 
                 st.markdown(
-    f"<h4 style='text-align: center;'>Distribution of {value_col} by {selected_column}</h4>",
-    unsafe_allow_html=True
-)
+                    f"<h4 style='text-align: center;'>Distribution of {value_col} by {selected_column}</h4>",
+                    unsafe_allow_html=True
+                )
                 fig = go.Figure()
                 fig.add_trace(go.Histogram(
                     x=g1, 
@@ -327,35 +327,56 @@ def test_details_page():
 
 
 
-                    with col2:
+                        with col2:
 
-                        _, p_var = stats.levene(group1_data, group2_data)
-                        equal_var = p_var > 0.05
-                        
-                        t_stat, p_value = stats.ttest_ind(
+                            _, p_var = stats.levene(group1_data, group2_data)
+                            equal_var = p_var > 0.05
+                            
+                            t_stat, p_value = stats.ttest_ind(
+                                group1_data,
+                                group2_data,
+                                equal_var=equal_var
+                            )
+                            
+                            cohens_d = pg.compute_effsize(
+                                group1_data,
+                                group2_data,
+                                eftype='cohen'
+                            )
+                            
+                            show_test_results(
+                                test_name="Independent t-test",
+                                statistic=t_stat,
+                                p_value=p_value,
+                                effect_size=cohens_d,
+                                effect_name="Cohen's d",
+                                extra_info=[
+                                    f"Group sizes: {len(group1_data)} vs {len(group2_data)}",
+                                    f"Group means: {group1_data.mean():.2f} vs {group2_data.mean():.2f}",
+                                    f"Equal variance assumed: {'Yes' if equal_var else 'No'} (Levene's test p = {p_var:.4f})"
+                                ]
+                            )
+                            
+                    elif st.session_state.selected_test == "Mann-Whitney U Test":
+                        u_stat, p_value = stats.mannwhitneyu(
                             group1_data,
                             group2_data,
-                            equal_var=equal_var
+                            alternative='two-sided'
                         )
-                        
-                        cohens_d = pg.compute_effsize(
-                            group1_data,
-                            group2_data,
-                            eftype='cohen'
-                        )
-                        
+                        n1 = len(group1_data)
+                        n2 = len(group2_data)
+                        r = 1 - (2 * u_stat) / (n1 * n2)
                         show_test_results(
-                            test_name="Independent t-test",
-                            statistic=t_stat,
+                            test_name="Mann-Whitney U Test",
+                            statistic=u_stat,
                             p_value=p_value,
-                            effect_size=cohens_d,
-                            effect_name="Cohen's d",
+                            effect_size=r,
+                            effect_name="Rank-biserial r",
                             extra_info=[
-                                f"Group sizes: {len(group1_data)} vs {len(group2_data)}",
-                                f"Group means: {group1_data.mean():.2f} vs {group2_data.mean():.2f}",
-                                f"Equal variance assumed: {'Yes' if equal_var else 'No'} (Levene's test p = {p_var:.4f})"
+                                f"Group sizes: {n1} vs {n2}",
+                                f"Group medians: {group1_data.median():.2f} vs {group2_data.median():.2f}"
                             ]
-                        )
+                        )    
 
                     
                
@@ -386,9 +407,9 @@ def test_details_page():
             col1, col2, col3 = st.columns([2,2,2])
             with col1:
                 st.markdown(
-    f"<h4 style='text-align: center;'>Pre-Post Comparison</h4>",
-    unsafe_allow_html=True
-)
+                    f"<h4 style='text-align: center;'>Pre-Post Comparison</h4>",
+                    unsafe_allow_html=True
+                )
                 fig = go.Figure()
                 fig.add_trace(go.Histogram(
                     x=data[pre_col].dropna(),
@@ -423,9 +444,9 @@ def test_details_page():
 
                             with col2:
                                 st.markdown(
-                    f"<h4 style='text-align: center;'>Difference Distribution</h4>",
-                    unsafe_allow_html=True
-                )
+                                    f"<h4 style='text-align: center;'>Difference Distribution</h4>",
+                                    unsafe_allow_html=True
+                                )
                                 diff = data[post_col] - data[pre_col]
                                 fig_diff = go.Figure()
                                 fig_diff.add_trace(go.Histogram(
@@ -470,17 +491,17 @@ def test_details_page():
                                     ]
                                 )
                                     
-        elif st.session_state.selected_test == "Wilcoxon signed-rank Test":
-                    w_stat, p_value = stats.wilcoxon(
-                        data[pre_col].dropna(), 
-                        data[post_col].dropna()
-                    )
-                    
-                    show_test_results(
-                        test_name="Wilcoxon signed-rank Test",
-                        statistic=w_stat,
-                        p_value=p_value
-                    )
+                    elif st.session_state.selected_test == "Wilcoxon signed-rank Test":
+                                w_stat, p_value = stats.wilcoxon(
+                                    data[pre_col].dropna(), 
+                                    data[post_col].dropna()
+                                )
+                                
+                                show_test_results(
+                                    test_name="Wilcoxon signed-rank Test",
+                                    statistic=w_stat,
+                                    p_value=p_value
+                                )
                             
         
         elif st.session_state.selected_test in ["ANOVA", "Kruskal-Wallis Test"]:
@@ -547,55 +568,55 @@ def test_details_page():
 
 
             
-                    _, p_var = stats.levene(*groups_data)
-                    equal_var = p_var > 0.05
-                    if not equal_var:
-                        st.warning("Warning: Groups may not have equal variances (Levene's test p < 0.05). Consider using Welch's ANOVA or Kruskal-Wallis test.")
+                        _, p_var = stats.levene(*groups_data)
+                        equal_var = p_var > 0.05
+                        if not equal_var:
+                            st.warning("Warning: Groups may not have equal variances (Levene's test p < 0.05). Consider using Welch's ANOVA or Kruskal-Wallis test.")
                         
-            with col2:
-                    f_stat, p_value = stats.f_oneway(*groups_data)
+                        with col2:
+                                f_stat, p_value = stats.f_oneway(*groups_data)
 
-                    try:
-                        group_data_numeric = data[group_column].astype(float)
-                    except ValueError:
-                        group_data_numeric = pd.factorize(data[group_column])[0]
-                    
-                    eta_squared = pg.compute_effsize(
-                        data[value_column].dropna(),
-                        group_data_numeric[data[value_column].dropna().index],
-                        eftype='eta-square'
-                    )
-                    
-                    show_test_results(
-                        test_name="ANOVA",
-                        statistic=f_stat,
-                        p_value=p_value,
-                        effect_size=eta_squared,
-                        effect_name="η² (eta squared)",
-                        extra_info=[
-                            f"Group sizes: {', '.join([f'{g}: {len(d)}' for g, d in zip(unique_groups, groups_data)])}",
-                            f"Group means: {', '.join([f'{g}: {d.mean():.2f}' for g, d in zip(unique_groups, groups_data)])}",
-                            f"Equal variance assumed: {'Yes' if equal_var else 'No'} (Levene's test p = {p_var:.4f})"
-                        ]
-                    )
+                                try:
+                                    group_data_numeric = data[group_column].astype(float)
+                                except ValueError:
+                                    group_data_numeric = pd.factorize(data[group_column])[0]
+                                
+                                eta_squared = pg.compute_effsize(
+                                    data[value_column].dropna(),
+                                    group_data_numeric[data[value_column].dropna().index],
+                                    eftype='eta-square'
+                                )
+                                
+                                show_test_results(
+                                    test_name="ANOVA",
+                                    statistic=f_stat,
+                                    p_value=p_value,
+                                    effect_size=eta_squared,
+                                    effect_name="η² (eta squared)",
+                                    extra_info=[
+                                        f"Group sizes: {', '.join([f'{g}: {len(d)}' for g, d in zip(unique_groups, groups_data)])}",
+                                        f"Group means: {', '.join([f'{g}: {d.mean():.2f}' for g, d in zip(unique_groups, groups_data)])}",
+                                        f"Equal variance assumed: {'Yes' if equal_var else 'No'} (Levene's test p = {p_var:.4f})"
+                                    ]
+                                )
                 
-        elif st.session_state.selected_test == "Kruskal-Wallis Test":
-                    h_stat, p_value = stats.kruskal(*groups_data)
-                    n = len(data[value_column].dropna())
-                    k = len(unique_groups)
-                    epsilon_squared = h_stat / (n * (k + 1))
-                    
-                    show_test_results(
-                        test_name="Kruskal-Wallis Test",
-                        statistic=h_stat,
-                        p_value=p_value,
-                        effect_size=epsilon_squared,
-                        effect_name="ε² (epsilon squared)",
-                        extra_info=[
-                            f"Group sizes: {', '.join([f'{g}: {len(d)}' for g, d in zip(unique_groups, groups_data)])}",
-                            f"Group medians: {', '.join([f'{g}: {d.median():.2f}' for g, d in zip(unique_groups, groups_data)])}"
-                        ]
-                    )
+                    elif st.session_state.selected_test == "Kruskal-Wallis Test":
+                                h_stat, p_value = stats.kruskal(*groups_data)
+                                n = len(data[value_column].dropna())
+                                k = len(unique_groups)
+                                epsilon_squared = h_stat / (n * (k + 1))
+                                
+                                show_test_results(
+                                    test_name="Kruskal-Wallis Test",
+                                    statistic=h_stat,
+                                    p_value=p_value,
+                                    effect_size=epsilon_squared,
+                                    effect_name="ε² (epsilon squared)",
+                                    extra_info=[
+                                        f"Group sizes: {', '.join([f'{g}: {len(d)}' for g, d in zip(unique_groups, groups_data)])}",
+                                        f"Group medians: {', '.join([f'{g}: {d.median():.2f}' for g, d in zip(unique_groups, groups_data)])}"
+                                    ]
+                                )
         
         elif st.session_state.selected_test in ["Pearson correlation", "Spearman correlation"]:
             col1, col2 = st.columns(2)
