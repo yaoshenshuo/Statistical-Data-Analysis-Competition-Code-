@@ -9,6 +9,177 @@ import seaborn as sns
 from scipy import stats
 import pingouin as pg
 
+
+
+
+def show_test_results_with_no_effect_name(test_name, statistic, p_value, effect_size=None, effect_name=None, extra_info=None):
+    st.markdown(
+        f"<div style='text-align: center;'><h4>Test Results: <em>{test_name}</em></h4></div>",
+        unsafe_allow_html=True
+    )
+    tooltips = {
+        "Statistic": "Test statistic is a value calculated from sample data that measures how far the sample deviates from the null hypothesis, used to determine whether to reject the null hypothesis.",
+        "p-value": "P-value is the probability of observing current or more extreme data when the original hypothesis is true.",
+    }
+
+    if test_name == "Pearson correlation":
+        tooltips = {
+            "Pearson’s r": "Pearson’s r is a measure of the strength and direction of the linear relationship between two continuous variables.",
+            "p-value": "P-value is the probability of observing current or more extreme data when the original hypothesis is true.",
+        }
+
+    html = """
+    <style>
+    .tooltip-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .tooltip-trigger {
+        border-bottom: 1px dotted #666;
+        cursor: help;
+    }
+    
+    .tooltip-content {
+        visibility: hidden;
+        width: 300px;
+        max-width: 80vw;
+        background-color: #333;
+        color: #fff;
+        text-align: left;
+        border-radius: 4px;
+        padding: 8px;
+        position: absolute;
+        z-index: 9999;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 14px;
+        line-height: 1.4;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        word-wrap: break-word;
+    }
+    
+    .tooltip-wrapper:hover .tooltip-content {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    /* Arrow for tooltip */
+    .tooltip-content::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+        .tooltip-content {
+            left: 0;
+            transform: none;
+            right: auto;
+        }
+        .tooltip-content::after {
+            left: 15px;
+            margin-left: 0;
+        }
+    }
+    
+    /* Table styling */
+    .results-table {
+        width: 90%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+        font-family: sans-serif;
+        margin-left: 50px;
+    }
+    
+    .results-table th, 
+    .results-table td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .results-table th {
+        background-color: #f5f5f5;
+        font-weight: 600;
+    }
+    
+    .results-table tr:hover {
+        background-color: #f9f9f9;
+    }
+    
+    .value-cell {
+        font-family: monospace;
+        text-align: right;
+    }
+    </style>
+    
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+    """
+    
+    # Add Statistic row
+    html += f"""
+    <tr>
+        <td>
+            <div class="tooltip-wrapper">
+                <span class="tooltip-trigger">Statistic</span>
+                <div class="tooltip-content">{tooltips['Pearson’s r']}</div>
+            </div>
+        </td>
+        <td class="value-cell">{statistic:.4f}</td>
+    </tr>
+    """
+    
+    # Add p-value row
+    html += f"""
+    <tr>
+        <td>
+            <div class="tooltip-wrapper">
+                <span class="tooltip-trigger">p-value</span>
+                <div class="tooltip-content">{tooltips['p-value']}</div>
+            </div>
+        </td>
+        <td class="value-cell">{p_value:.4f}</td>
+    </tr>
+    """
+    
+    st.markdown(html, unsafe_allow_html=True)
+
+    alpha = 0.05
+    if p_value < alpha:
+        st.success("Statistically significant (p < 0.05)")
+    else:
+        st.warning("Not statistically significant (p ≥ 0.05)")
+    
+
+    if extra_info is not None:
+
+        expander = st.expander("# Additional Information")
+        if isinstance(extra_info, list):
+            for info in extra_info:
+                expander.write(info)
+        else:
+            expander.write(extra_info)
+
+
+
+
 st.set_page_config(
     page_title="SmartStat",
     page_icon="📊",
@@ -654,12 +825,12 @@ def test_details_page():
                         line_color='red',
                         name='Regression Line'
                     ))
-                fig_scatter.update_layout(
-                    xaxis_title=x_col,
-                    yaxis_title=y_col
-                )
-                st.plotly_chart(fig_scatter)
-                
+                    fig_scatter.update_layout(
+                        xaxis_title=x_col,
+                        yaxis_title=y_col
+                    )
+                    st.plotly_chart(fig_scatter)
+                    
             
                 if st.button("Perform Test"):
                     if st.session_state.selected_test == "Pearson correlation":
@@ -667,9 +838,8 @@ def test_details_page():
                         y = data[y_col].dropna()
                         r_stat, p_value = stats.pearsonr(x, y)
                         n = len(x)
-
                         with col2:
-                            show_test_results(
+                            show_test_results_with_no_effect_name(
                                 test_name="Pearson correlation",
                                 statistic=r_stat,
                                 p_value=p_value,
@@ -1112,3 +1282,4 @@ if st.session_state.page == "main":
     main_page()
 elif st.session_state.page == "test_details":
     test_details_page()
+
