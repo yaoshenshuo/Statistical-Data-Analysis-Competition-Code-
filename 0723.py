@@ -17,10 +17,10 @@ def show_test_results_with_no_effect_name(test_name, statistic, p_value, effect_
         f"<div style='text-align: center;'><h4>Test Results: <em>{test_name}</em></h4></div>",
         unsafe_allow_html=True
     )
-    tooltips = {
-        "Statistic": "Test statistic is a value calculated from sample data that measures how far the sample deviates from the null hypothesis, used to determine whether to reject the null hypothesis.",
-        "p-value": "P-value is the probability of observing current or more extreme data when the original hypothesis is true.",
-    }
+    # tooltips = {
+    #     "Statistic": "Test statistic is a value calculated from sample data that measures how far the sample deviates from the null hypothesis, used to determine whether to reject the null hypothesis.",
+    #     "p-value": "P-value is the probability of observing current or more extreme data when the original hypothesis is true.",
+    # }
 
     if test_name == "Pearson correlation":
         tooltips = {
@@ -28,139 +28,415 @@ def show_test_results_with_no_effect_name(test_name, statistic, p_value, effect_
             "p-value": "P-value is the probability of observing current or more extreme data when the original hypothesis is true.",
         }
 
-    html = """
-    <style>
-    .tooltip-wrapper {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .tooltip-trigger {
-        border-bottom: 1px dotted #666;
-        cursor: help;
-    }
-    
-    .tooltip-content {
-        visibility: hidden;
-        width: 300px;
-        max-width: 80vw;
-        background-color: #333;
-        color: #fff;
-        text-align: left;
-        border-radius: 4px;
-        padding: 8px;
-        position: absolute;
-        z-index: 9999;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        opacity: 0;
-        transition: opacity 0.3s;
-        font-size: 14px;
-        line-height: 1.4;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        word-wrap: break-word;
-    }
-    
-    .tooltip-wrapper:hover .tooltip-content {
-        visibility: visible;
-        opacity: 1;
-    }
-    
-    /* Arrow for tooltip */
-    .tooltip-content::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        margin-left: -5px;
-        border-width: 5px;
-        border-style: solid;
-        border-color: #333 transparent transparent transparent;
-    }
-    
-    /* Mobile responsiveness */
-    @media (max-width: 600px) {
+        html = """
+        <style>
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-trigger {
+            border-bottom: 1px dotted #666;
+            cursor: help;
+        }
+        
         .tooltip-content {
-            left: 0;
-            transform: none;
-            right: auto;
+            visibility: hidden;
+            width: 300px;
+            max-width: 80vw;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 4px;
+            padding: 8px;
+            position: absolute;
+            z-index: 9999;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            word-wrap: break-word;
         }
+        
+        .tooltip-wrapper:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Arrow for tooltip */
         .tooltip-content::after {
-            left: 15px;
-            margin-left: 0;
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
         }
-    }
-    
-    /* Table styling */
-    .results-table {
-        width: 90%;
-        border-collapse: collapse;
-        margin-bottom: 1rem;
-        font-family: sans-serif;
-        margin-left: 50px;
-    }
-    
-    .results-table th, 
-    .results-table td {
-        padding: 10px 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-    
-    .results-table th {
-        background-color: #f5f5f5;
-        font-weight: 600;
-    }
-    
-    .results-table tr:hover {
-        background-color: #f9f9f9;
-    }
-    
-    .value-cell {
-        font-family: monospace;
-        text-align: right;
-    }
-    </style>
-    
-    <table class="results-table">
-        <thead>
-            <tr>
-                <th>Metric</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-    """
-    
-    # Add Statistic row
-    html += f"""
-    <tr>
-        <td>
-            <div class="tooltip-wrapper">
-                <span class="tooltip-trigger">Statistic</span>
-                <div class="tooltip-content">{tooltips['Pearson’s r']}</div>
-            </div>
-        </td>
-        <td class="value-cell">{statistic:.4f}</td>
-    </tr>
-    """
-    
-    # Add p-value row
-    html += f"""
-    <tr>
-        <td>
-            <div class="tooltip-wrapper">
-                <span class="tooltip-trigger">p-value</span>
-                <div class="tooltip-content">{tooltips['p-value']}</div>
-            </div>
-        </td>
-        <td class="value-cell">{p_value:.4f}</td>
-    </tr>
-    """
-    
-    st.markdown(html, unsafe_allow_html=True)
+        
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            .tooltip-content {
+                left: 0;
+                transform: none;
+                right: auto;
+            }
+            .tooltip-content::after {
+                left: 15px;
+                margin-left: 0;
+            }
+        }
+        
+        /* Table styling */
+        .results-table {
+            width: 90%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            font-family: sans-serif;
+            margin-left: 50px;
+        }
+        
+        .results-table th, 
+        .results-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .value-cell {
+            font-family: monospace;
+            text-align: right;
+        }
+        </style>
+        
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        
+        # Add Statistic row
+        html += f"""
+        <tr>
+            <td>
+                <div class="tooltip-wrapper">
+                    <span class="tooltip-trigger">Pearson’s r</span>
+                    <div class="tooltip-content">{tooltips['Pearson’s r']}</div>
+                </div>
+            </td>
+            <td class="value-cell">{statistic:.4f}</td>
+        </tr>
+        """
+        
+        # Add p-value row
+        html += f"""
+        <tr>
+            <td>
+                <div class="tooltip-wrapper">
+                    <span class="tooltip-trigger">p-value</span>
+                    <div class="tooltip-content">{tooltips['p-value']}</div>
+                </div>
+            </td>
+            <td class="value-cell">{p_value:.4f}</td>
+        </tr>
+        """
+        
+        st.markdown(html, unsafe_allow_html=True)
 
+
+
+
+    elif test_name == 'Chi-Square test of independence':
+        tooltips = {
+            "chi2_stat": "你的注释",
+            "p-value": "P-value is the probability of observing current or more extreme data when the original hypothesis is true.",
+        }
+        html = """
+        <style>
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-trigger {
+            border-bottom: 1px dotted #666;
+            cursor: help;
+        }
+        
+        .tooltip-content {
+            visibility: hidden;
+            width: 300px;
+            max-width: 80vw;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 4px;
+            padding: 8px;
+            position: absolute;
+            z-index: 9999;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            word-wrap: break-word;
+        }
+        
+        .tooltip-wrapper:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Arrow for tooltip */
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            .tooltip-content {
+                left: 0;
+                transform: none;
+                right: auto;
+            }
+            .tooltip-content::after {
+                left: 15px;
+                margin-left: 0;
+            }
+        }
+        
+        /* Table styling */
+        .results-table {
+            width: 90%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            font-family: sans-serif;
+            margin-left: 50px;
+        }
+        
+        .results-table th, 
+        .results-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .value-cell {
+            font-family: monospace;
+            text-align: right;
+        }
+        </style>
+        
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        
+        # Add Statistic row
+        html += f"""
+        <tr>
+            <td>
+                <div class="tooltip-wrapper">
+                    <span class="tooltip-trigger">chi2_stat</span>
+                    <div class="tooltip-content">{tooltips['chi2_stat']}</div>
+                </div>
+            </td>
+            <td class="value-cell">{statistic:.4f}</td>
+        </tr>
+        """
+        
+        # Add p-value row
+        html += f"""
+        <tr>
+            <td>
+                <div class="tooltip-wrapper">
+                    <span class="tooltip-trigger">p-value</span>
+                    <div class="tooltip-content">{tooltips['p-value']}</div>
+                </div>
+            </td>
+            <td class="value-cell">{p_value:.4f}</td>
+        </tr>
+        """
+        st.markdown(html, unsafe_allow_html=True)
+
+    elif test_name == 'Z-test for proportions':
+        tooltips = {
+            "z_stat": "你的注释",
+            "p-value": "P-value is the probability of observing current or more extreme data when the original hypothesis is true.",
+        }
+        html = """
+        <style>
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-trigger {
+            border-bottom: 1px dotted #666;
+            cursor: help;
+        }
+        
+        .tooltip-content {
+            visibility: hidden;
+            width: 300px;
+            max-width: 80vw;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 4px;
+            padding: 8px;
+            position: absolute;
+            z-index: 9999;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            word-wrap: break-word;
+        }
+        
+        .tooltip-wrapper:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Arrow for tooltip */
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            .tooltip-content {
+                left: 0;
+                transform: none;
+                right: auto;
+            }
+            .tooltip-content::after {
+                left: 15px;
+                margin-left: 0;
+            }
+        }
+        
+        /* Table styling */
+        .results-table {
+            width: 90%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            font-family: sans-serif;
+            margin-left: 50px;
+        }
+        
+        .results-table th, 
+        .results-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .value-cell {
+            font-family: monospace;
+            text-align: right;
+        }
+        </style>
+        
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        
+        # Add Statistic row
+        html += f"""
+        <tr>
+            <td>
+                <div class="tooltip-wrapper">
+                    <span class="tooltip-trigger">z_stat</span>
+                    <div class="tooltip-content">{tooltips['z_stat']}</div>
+                </div>
+            </td>
+            <td class="value-cell">{statistic:.4f}</td>
+        </tr>
+        """
+        
+        # Add p-value row
+        html += f"""
+        <tr>
+            <td>
+                <div class="tooltip-wrapper">
+                    <span class="tooltip-trigger">p-value</span>
+                    <div class="tooltip-content">{tooltips['p-value']}</div>
+                </div>
+            </td>
+            <td class="value-cell">{p_value:.4f}</td>
+        </tr>
+        """
+        st.markdown(html, unsafe_allow_html=True)
     alpha = 0.05
     if p_value < alpha:
         st.success("Statistically significant (p < 0.05)")
@@ -857,14 +1133,20 @@ def test_details_page():
             with col2:
                 var2 = st.selectbox("Select second categorical variable", data.columns)
             
+            
             contingency_table = pd.crosstab(data[var1], data[var2])
             st.write("Contingency Table:")
             st.dataframe(contingency_table)
-            
-            fig, ax = plt.subplots(figsize=(10, 6))
-            sns.heatmap(contingency_table, annot=True, fmt="d", cmap="YlGnBu", ax=ax)
-            ax.set_title("Contingency Table Heatmap")
-            st.pyplot(fig)
+            col1, col2 = st.columns([1,1])
+            with col1:
+                st.markdown(
+                    f"<div style='text-align: center;'><h4>Contingency Table Heatmap </h4></div>",
+                    unsafe_allow_html=True
+                )
+                fig, ax = plt.subplots(figsize=(10, 6))
+                sns.heatmap(contingency_table, annot=True, fmt="d", cmap="YlGnBu", ax=ax)
+                # ax.set_title("Contingency Table Heatmap")
+                st.pyplot(fig)
             
             if st.button("Perform Test"):
                 chi2_stat, p_value, dof, expected = stats.chi2_contingency(contingency_table)
@@ -872,77 +1154,78 @@ def test_details_page():
                 n = contingency_table.sum().sum()
                 phi = np.sqrt(chi2_stat / n)
                 cramers_v = np.sqrt(chi2_stat / (n * (min(contingency_table.shape) - 1)))
-
-                show_test_results(
-                    test_name="Chi-Square test of independence",
-                    statistic=chi2_stat,
-                    p_value=p_value,
-                    extra_info=[
-                        f"Degrees of freedom: {dof}",
-                        f"Phi coefficient: {phi:.3f}",
-                        f"Cramer's V: {cramers_v:.3f}"
-                    ]
-                )
+                with col2:
+                    show_test_results_with_no_effect_name(
+                        test_name="Chi-Square test of independence",
+                        statistic=chi2_stat,
+                        p_value=p_value,
+                        extra_info=[
+                            f"Degrees of freedom: {dof}",
+                            f"Phi coefficient: {phi:.3f}",
+                            f"Cramer's V: {cramers_v:.3f}"
+                        ]
+                    )
         
         elif st.session_state.selected_test == "Z-test for proportions":
-            st.write("Please prepare your data in one of these formats:")
-            st.write("1. Raw data with one row per observation")
-            st.write("2. Summary data with success counts and totals")
-            
-            format_choice = st.radio("Data format:", ("Raw data", "Summary data"))
-            
-            if format_choice == "Raw data":
-                group_col = st.selectbox("Select group column", data.columns)
-                outcome_col = st.selectbox("Select outcome column", data.columns)
+            group_col = st.selectbox("Select group column", data.columns)
+            outcome_col = st.selectbox("Select outcome column", data.columns)
+            summary = data.groupby(group_col)[outcome_col].value_counts().unstack()
+            st.write("Summary table:")
+            st.dataframe(summary)
+            col1, col2 = st.columns([1,1])
+            with col1:
+                st.markdown(
+                    f"<div style='text-align: center;'><h4>Proportion Comparison</h4></div>",
+                    unsafe_allow_html=True
+                )
 
-                summary = data.groupby(group_col)[outcome_col].value_counts().unstack()
-                st.write("Summary table:")
-                st.dataframe(summary)
+                success_prop = summary.iloc[:, 0] / summary.sum(axis=1)
+                failure_prop = summary.iloc[:, 1] / summary.sum(axis=1)
+
+                fig = go.Figure()
+                fig.add_trace(go.Bar(
+                    x=summary.index,
+                    y=success_prop,
+                    name=f'Success ({summary.columns[0]})',
+                    marker_color='#1f77b4',
+                    text=[f"{p:.1%}" for p in success_prop],
+                    textposition='inside'
+                ))
+                fig.add_trace(go.Bar(
+                    x=summary.index,
+                    y=failure_prop,
+                    name=f'Failure ({summary.columns[1]})',
+                    marker_color='#ff7f0e',
+                    text=[f"{p:.1%}" for p in failure_prop],
+                    textposition='inside'
+                ))
                 
-                if st.button("Perform Test"):
-                    from statsmodels.stats.proportion import proportions_ztest
-                    
-                    count = summary.iloc[:, 0].values
-                    nobs = summary.sum(axis=1).values
-
-                    z_stat, p_value = proportions_ztest(count, nobs)
-
-                    p1 = count[0] / nobs[0]
-                    p2 = count[1] / nobs[1]
-                    h = 2 * np.arcsin(np.sqrt(p1)) - 2 * np.arcsin(np.sqrt(p2))
-
-                    show_test_results(
-                        test_name="Z-test for proportions",
-                        statistic=z_stat,
-                        p_value=p_value,
-                        extra_info=[
-                            f"Proportion 1: {p1:.3f}",
-                            f"Proportion 2: {p2:.3f}",
-                            f"Cohen's h: {abs(h):.3f}"
-                        ]
-                    )
+                fig.update_layout(
+                    barmode='stack',
+                    yaxis_title="Proportion",
+                    yaxis_tickformat=".0%",
+                    xaxis_title=group_col,
+                    legend_title="Outcome",
+                    height=400,
+                    hovermode="x unified"
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
             
-            else:  
-                col1, col2 = st.columns(2)
-                with col1:
-                    success1 = st.number_input("Successes in Group 1", min_value=0, value=30)
-                    total1 = st.number_input("Total in Group 1", min_value=1, value=100)
+            if st.button("Perform Test"):
+                from statsmodels.stats.proportion import proportions_ztest
+                
+                count = summary.iloc[:, 0].values
+                nobs = summary.sum(axis=1).values
+
+                z_stat, p_value = proportions_ztest(count, nobs)
+
+                p1 = count[0] / nobs[0]
+                p2 = count[1] / nobs[1]
+                h = 2 * np.arcsin(np.sqrt(p1)) - 2 * np.arcsin(np.sqrt(p2))
+
                 with col2:
-                    success2 = st.number_input("Successes in Group 2", min_value=0, value=40)
-                    total2 = st.number_input("Total in Group 2", min_value=1, value=100)
-                
-                if st.button("Perform Test"):
-                    from statsmodels.stats.proportion import proportions_ztest
-                    
-                    count = np.array([success1, success2])
-                    nobs = np.array([total1, total2])
-                    z_stat, p_value = proportions_ztest(count, nobs)
-
-                    p1 = success1 / total1
-                    p2 = success2 / total2
-                    h = 2 * np.arcsin(np.sqrt(p1)) - 2 * np.arcsin(np.sqrt(p2))
-                    
-                    show_test_results(
+                    show_test_results_with_no_effect_name(
                         test_name="Z-test for proportions",
                         statistic=z_stat,
                         p_value=p_value,
@@ -952,6 +1235,7 @@ def test_details_page():
                             f"Cohen's h: {abs(h):.3f}"
                         ]
                     )
+            
         
     except Exception as e:
         st.error(f"Error reading file: {str(e)}")
