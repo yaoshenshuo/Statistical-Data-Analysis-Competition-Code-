@@ -1236,6 +1236,9 @@ def test_details_page():
                         statistic=z_stat,
                         p_value=p_value,
                         extra_info=[
+                            f"Sample size: {len(data)}",
+                            f"Sample size - Group 1: {nobs[0]}",
+                            f"Sample size - Group 2: {nobs[1]}",
                             f"Proportion 1: {p1:.3f}",
                             f"Proportion 2: {p2:.3f}",
                             f"Cohen's h: {abs(h):.3f}"
@@ -1572,4 +1575,3 @@ if st.session_state.page == "main":
     main_page()
 elif st.session_state.page == "test_details":
     test_details_page()
-
